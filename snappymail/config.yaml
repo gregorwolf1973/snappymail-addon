@@ -1,5 +1,5 @@
 name: SnappyMail
-version: "1.0.4"
+version: "1.0.5"
 slug: snappymail
 description: Simple, modern & fast web-based email client. Supports multiple accounts including Gmail.
 url: https://github.com/gregorwolf1973/snappymail-addon
@@ -8,21 +8,22 @@ arch:
   - amd64
   - armv7
 init: false
-ingress: true
-ingress_port: 8889
+ingress: false
 panel_icon: mdi:email
 panel_title: SnappyMail
 homeassistant_api: false
+ports:
+  8889/tcp: 8889
+ports_description:
+  8889/tcp: SnappyMail Web UI
 options:
   admin_password: "changeme"
   upload_max_size: "25M"
   memory_limit: "128M"
-  log_to_stdout: false
 schema:
   admin_password: str
   upload_max_size: str
   memory_limit: str
-  log_to_stdout: bool
 map:
   - type: addon_config
     read_only: false
