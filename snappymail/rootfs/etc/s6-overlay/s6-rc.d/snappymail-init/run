@@ -1,10 +1,16 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
-# SnappyMail initialization
+# SnappyMail initialization - runs once then sleeps forever
 # ==============================================================================
 
 DATA_DIR="/var/www/snappymail/data"
 CONFIG_DIR="${DATA_DIR}/_data_/_default_"
+
+# Only run if not already initialized
+if [ -f "${CONFIG_DIR}/.initialized" ]; then
+    bashio::log.info "SnappyMail already initialized, sleeping..."
+    sleep infinity
+fi
 
 bashio::log.info "Initializing SnappyMail..."
 
@@ -15,7 +21,30 @@ ADMIN_PASSWORD=$(bashio::config 'admin_password')
 echo "${ADMIN_PASSWORD}" > "${CONFIG_DIR}/admin_password.txt"
 chmod 600 "${CONFIG_DIR}/admin_password.txt"
 
+# Domain configs
+cat > "${CONFIG_DIR}/domains/biker633.ddnss.de.ini" << 'EOF'
+imap_host = "biker633.ddnss.de"
+imap_port = 993
+imap_secure = "SSL"
+smtp_host = "biker633.ddnss.de"
+smtp_port = 587
+smtp_secure = "TLS"
+EOF
+
+cat > "${CONFIG_DIR}/domains/gmail.com.ini" << 'EOF'
+imap_host = "imap.gmail.com"
+imap_port = 993
+imap_secure = "SSL"
+smtp_host = "smtp.gmail.com"
+smtp_port = 587
+smtp_secure = "TLS"
+EOF
+
+chown -R snappymail:snappymail "${CONFIG_DIR}"
+
+# Mark as initialized
+touch "${CONFIG_DIR}/.initialized"
+
 bashio::log.info "SnappyMail initialization complete!"
 
-# Keep process alive (required for longrun)
-exec tail -f /dev/null
+sleep infinity
