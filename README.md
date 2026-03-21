@@ -1,7 +1,5 @@
 # SnappyMail Home Assistant Add-on
 
-![SnappyMail Logo](snappymail/icon.png)
-
 A modern, fast, and lightweight web-based email client for Home Assistant.
 
 ## About
@@ -22,8 +20,29 @@ SnappyMail is a simple, modern & fast web-based email client. It supports multip
 - 🔒 Secure IMAP/SMTP connections
 - 📎 Attachment support
 - 🎨 Modern, clean UI
-- 🏠 Home Assistant Ingress support (no port forwarding needed)
+
+## Configuration
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `admin_password` | Admin panel password | `changeme` |
+| `web_port` | Port for the web UI | `8889` |
+| `domain` | Your mail domain | - |
+| `imap_host` | IMAP server address | - |
+| `imap_port` | IMAP server port | `993` |
+| `smtp_host` | SMTP server address | - |
+| `smtp_port` | SMTP server port | `587` |
+| `upload_max_size` | Max attachment size | `25M` |
+| `memory_limit` | PHP memory limit | `128M` |
+
+## Admin Panel
+
+Access the admin panel at: `http://[your-ha-ip]:[web_port]/?admin`
 
 ## Documentation
 
-See [DOCS.md](snappymail/DOCS.md) for full configuration instructions.
+See [DOCS.md](snappymail/DOCS.md) for full documentation.
+
+## License
+
+MIT License
