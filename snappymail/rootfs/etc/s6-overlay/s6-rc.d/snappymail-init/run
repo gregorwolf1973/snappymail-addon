@@ -1,49 +1,115 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
-# SnappyMail initialization - runs once then sleeps forever
+# SnappyMail initialization
 # ==============================================================================
 
 DATA_DIR="/var/www/snappymail/data"
 CONFIG_DIR="${DATA_DIR}/_data_/_default_"
-
-# Only run if not already initialized
-if [ -f "${CONFIG_DIR}/.initialized" ]; then
-    bashio::log.info "SnappyMail already initialized, sleeping..."
-    sleep infinity
-fi
+DOMAINS_DIR="${CONFIG_DIR}/domains"
 
 bashio::log.info "Initializing SnappyMail..."
 
-mkdir -p "${CONFIG_DIR}/domains"
+mkdir -p "${DOMAINS_DIR}"
 chown -R snappymail:snappymail "${DATA_DIR}"
 
+# Admin password
 ADMIN_PASSWORD=$(bashio::config 'admin_password')
 echo "${ADMIN_PASSWORD}" > "${CONFIG_DIR}/admin_password.txt"
 chmod 600 "${CONFIG_DIR}/admin_password.txt"
+chown snappymail:snappymail "${CONFIG_DIR}/admin_password.txt"
 
-# Domain configs
-cat > "${CONFIG_DIR}/domains/biker633.ddnss.de.ini" << 'EOF'
-imap_host = "biker633.ddnss.de"
-imap_port = 993
-imap_secure = "SSL"
-smtp_host = "biker633.ddnss.de"
-smtp_port = 587
-smtp_secure = "TLS"
+# Read config values
+DOMAIN=$(bashio::config 'domain')
+IMAP_HOST=$(bashio::config 'imap_host')
+IMAP_PORT=$(bashio::config 'imap_port')
+SMTP_HOST=$(bashio::config 'smtp_host')
+SMTP_PORT=$(bashio::config 'smtp_port')
+
+# Write local domain JSON
+cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
+{
+    "IMAP": {
+        "host": "${IMAP_HOST}",
+        "port": ${IMAP_PORT},
+        "type": 1,
+        "timeout": 300,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": true,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        }
+    },
+    "SMTP": {
+        "host": "${SMTP_HOST}",
+        "port": ${SMTP_PORT},
+        "type": 2,
+        "timeout": 60,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": true,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "useAuth": true,
+        "setSender": false
+    },
+    "whiteList": ""
+}
 EOF
 
-cat > "${CONFIG_DIR}/domains/gmail.com.ini" << 'EOF'
-imap_host = "imap.gmail.com"
-imap_port = 993
-imap_secure = "SSL"
-smtp_host = "smtp.gmail.com"
-smtp_port = 587
-smtp_secure = "TLS"
+# Write Gmail domain JSON
+cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
+{
+    "IMAP": {
+        "host": "imap.gmail.com",
+        "port": 993,
+        "type": 1,
+        "timeout": 300,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": false,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        }
+    },
+    "SMTP": {
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "type": 2,
+        "timeout": 60,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": false,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "useAuth": true,
+        "setSender": false
+    },
+    "whiteList": ""
+}
 EOF
 
-chown -R snappymail:snappymail "${CONFIG_DIR}"
-
-# Mark as initialized
-touch "${CONFIG_DIR}/.initialized"
+chown -R snappymail:snappymail "${DOMAINS_DIR}"
 
 bashio::log.info "SnappyMail initialization complete!"
 
