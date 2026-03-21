@@ -1,0 +1,13 @@
+configuration:
+  admin_password:
+    name: Admin Password
+    description: Password for the SnappyMail admin panel. Change this immediately!
+  upload_max_size:
+    name: Max Upload Size
+    description: Maximum size for email attachments (e.g. 25M, 50M)
+  memory_limit:
+    name: PHP Memory Limit
+    description: PHP memory limit (e.g. 128M, 256M)
+  log_to_stdout:
+    name: Log to stdout
+    description: Forward nginx and PHP logs to the Home Assistant log viewer
