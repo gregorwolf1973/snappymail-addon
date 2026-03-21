@@ -18,6 +18,16 @@ echo "${ADMIN_PASSWORD}" > "${CONFIG_DIR}/admin_password.txt"
 chmod 600 "${CONFIG_DIR}/admin_password.txt"
 chown snappymail:snappymail "${CONFIG_DIR}/admin_password.txt"
 
+# Admin password - bcrypt hash
+ADMIN_PASSWORD=$(bashio::config 'admin_password')
+HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
+mkdir -p "${CONFIG_DIR}/configs"
+cat > "${CONFIG_DIR}/configs/application.ini" << EOF
+[security]
+admin_password = "${HASH}"
+EOF
+chown -R snappymail:snappymail "${CONFIG_DIR}/configs"
+
 # Read config values
 DOMAIN=$(bashio::config 'domain')
 IMAP_HOST=$(bashio::config 'imap_host')
