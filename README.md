@@ -17,7 +17,6 @@ This add-on requires a running IMAP/SMTP mail server. It has been tested with th
 | Add-on | Purpose |
 |--------|---------|
 | **Mailserver** (erik73) | Provides IMAP and SMTP server (Postfix + Dovecot) |
-| **MariaDB** (erik73) | Required by the Mailserver add-on |
 
 ### Add the Erik73 Repository
 
