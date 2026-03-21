@@ -1,21 +1,18 @@
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
-# Labels
 LABEL \
     io.hass.name="SnappyMail" \
     io.hass.description="Simple, modern & fast web-based email client" \
     io.hass.type="addon" \
-    io.hass.version="1.0.0"
+    io.hass.version="1.0.4"
 
-# Environment
 ENV \
     SNAPPYMAIL_VERSION="2.38.2" \
     UPLOAD_MAX_SIZE="25M" \
     MEMORY_LIMIT="128M" \
     LOG_TO_STDOUT="false"
 
-# Install dependencies
 RUN apk add --no-cache \
     nginx \
     php84 \
@@ -40,10 +37,8 @@ RUN apk add --no-cache \
     tar \
     bash
 
-# Create snappymail user
 RUN addgroup -S snappymail && adduser -S -G snappymail snappymail
 
-# Download and install SnappyMail
 RUN mkdir -p /var/www/snappymail && \
     curl -L "https://github.com/the-djmaze/snappymail/releases/download/v${SNAPPYMAIL_VERSION}/snappymail-${SNAPPYMAIL_VERSION}.tar.gz" \
     -o /tmp/snappymail.tar.gz && \
@@ -52,12 +47,10 @@ RUN mkdir -p /var/www/snappymail && \
     mkdir -p /var/www/snappymail/data && \
     chown -R snappymail:snappymail /var/www/snappymail
 
-# Copy configuration files
 COPY rootfs /
 
-# Set permissions
 RUN chmod +x /etc/s6-overlay/s6-rc.d/snappymail-init/run && \
     chmod +x /etc/s6-overlay/s6-rc.d/nginx/run && \
     chmod +x /etc/s6-overlay/s6-rc.d/php-fpm/run
 
-EXPOSE 8888
+EXPOSE 8889
