@@ -25,7 +25,7 @@ IMAP_PORT=$(bashio::config 'imap_port')
 SMTP_HOST=$(bashio::config 'smtp_host')
 SMTP_PORT=$(bashio::config 'smtp_port')
 
-# Write local domain JSON
+# Write local domain JSON - vollständiges Format
 cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
 {
     "IMAP": {
@@ -36,6 +36,7 @@ cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
         "shortLogin": false,
         "lowerLogin": true,
         "stripLogin": "",
+        "sasl": ["SCRAM-SHA3-512","SCRAM-SHA-512","SCRAM-SHA-256","SCRAM-SHA-1","PLAIN","LOGIN"],
         "ssl": {
             "verify_peer": false,
             "verify_peer_name": false,
@@ -43,7 +44,16 @@ cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
             "SNI_enabled": true,
             "disable_compression": true,
             "security_level": 1
-        }
+        },
+        "use_expunge_all_on_delete": false,
+        "fast_simple_search": true,
+        "force_select": false,
+        "message_all_headers": false,
+        "message_list_limit": 10000,
+        "search_filter": "",
+        "spam_headers": "",
+        "virus_headers": "",
+        "disabled_capabilities": []
     },
     "SMTP": {
         "host": "${SMTP_HOST}",
@@ -52,6 +62,8 @@ cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
         "timeout": 60,
         "shortLogin": false,
         "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["SCRAM-SHA3-512","SCRAM-SHA-512","SCRAM-SHA-256","SCRAM-SHA-1","PLAIN","LOGIN"],
         "ssl": {
             "verify_peer": false,
             "verify_peer_name": false,
@@ -61,7 +73,29 @@ cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
             "security_level": 1
         },
         "useAuth": true,
-        "setSender": false
+        "setSender": false,
+        "usePhpMail": false,
+        "authPlainLine": false
+    },
+    "Sieve": {
+        "host": "",
+        "port": 4190,
+        "type": 0,
+        "timeout": 10,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["SCRAM-SHA3-512","SCRAM-SHA-512","SCRAM-SHA-256","SCRAM-SHA-1","PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": true,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "enabled": false,
+        "authLiteral": true
     },
     "whiteList": ""
 }
@@ -78,6 +112,7 @@ cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
         "shortLogin": false,
         "lowerLogin": true,
         "stripLogin": "",
+        "sasl": ["SCRAM-SHA3-512","SCRAM-SHA-512","SCRAM-SHA-256","SCRAM-SHA-1","PLAIN","LOGIN"],
         "ssl": {
             "verify_peer": false,
             "verify_peer_name": false,
@@ -85,7 +120,16 @@ cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
             "SNI_enabled": true,
             "disable_compression": true,
             "security_level": 1
-        }
+        },
+        "use_expunge_all_on_delete": false,
+        "fast_simple_search": true,
+        "force_select": false,
+        "message_all_headers": false,
+        "message_list_limit": 10000,
+        "search_filter": "",
+        "spam_headers": "",
+        "virus_headers": "",
+        "disabled_capabilities": []
     },
     "SMTP": {
         "host": "smtp.gmail.com",
@@ -94,6 +138,8 @@ cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
         "timeout": 60,
         "shortLogin": false,
         "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["SCRAM-SHA3-512","SCRAM-SHA-512","SCRAM-SHA-256","SCRAM-SHA-1","PLAIN","LOGIN"],
         "ssl": {
             "verify_peer": false,
             "verify_peer_name": false,
@@ -103,14 +149,34 @@ cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
             "security_level": 1
         },
         "useAuth": true,
-        "setSender": false
+        "setSender": false,
+        "usePhpMail": false,
+        "authPlainLine": false
+    },
+    "Sieve": {
+        "host": "",
+        "port": 4190,
+        "type": 0,
+        "timeout": 10,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["SCRAM-SHA3-512","SCRAM-SHA-512","SCRAM-SHA-256","SCRAM-SHA-1","PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": false,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "enabled": false,
+        "authLiteral": true
     },
     "whiteList": ""
 }
 EOF
 
 chown -R snappymail:snappymail "${DOMAINS_DIR}"
-
 bashio::log.info "SnappyMail initialization complete!"
-
 sleep infinity
