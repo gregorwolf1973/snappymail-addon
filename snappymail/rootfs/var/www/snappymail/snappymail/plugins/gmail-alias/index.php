@@ -1,6 +1,5 @@
 <?php
-
-class gmail_alias extends \RainLoop\Plugins\AbstractPlugin
+class GmailAliasPlugin extends \RainLoop\Plugins\AbstractPlugin
 {
     const NAME = 'Gmail Alias Password';
     const VERSION = '1.0.0';
