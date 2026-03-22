@@ -11,6 +11,7 @@ bashio::log.info "Initializing SnappyMail..."
 
 mkdir -p "${DOMAINS_DIR}"
 mkdir -p "${CONFIG_DIR}/configs"
+mkdir -p "${CONFIG_DIR}/plugins/gmail-alias"
 chown -R snappymail:snappymail "${DATA_DIR}"
 
 # Admin password als bcrypt Hash
@@ -188,28 +189,38 @@ if [ -f "${DISABLED_FILE}" ]; then
 fi
 
 chown -R snappymail:snappymail "${DOMAINS_DIR}"
-bashio::log.info "SnappyMail initialization complete!"
 
-# Gmail alias config
-GMAIL_ADDRESS=$(bashio::config 'gmail_address')
-GMAIL_PASSWORD=$(bashio::config 'gmail_password')
-GMAIL_ALIAS=$(bashio::config 'gmail_alias_password')
-
-cat > "${DATA_DIR}/gmail_alias_config.json" << EOF
+# Create Gmail Alias Plugin
+bashio::log.info "Creating Gmail Alias Plugin..."
+PLUGIN_FILE="${CONFIG_DIR}/plugins/gmail-alias/index.php"
+cat > "${PLUGIN_FILE}" << 'PHPEOF'
+<?php
+class GmailAliasPlugin extends \RainLoop\Plugins\AbstractPlugin
 {
-    "gmail_address": "${GMAIL_ADDRESS}",
-    "gmail_password": "${GMAIL_PASSWORD}",
-    "gmail_alias_password": "${GMAIL_ALIAS}"
+    const NAME = 'Gmail Alias Password';
+    const VERSION = '1.0.0';
+    const DESCRIPTION = 'Replaces alias password with real Gmail App password on login';
+    public function Init(): void
+    {
+        $this->addHook('login.credentials.step-2', 'ReplaceAliasPassword');
+        $this->addProperty('gmail_address', 'Gmail Address', 'string', '');
+        $this->addProperty('gmail_real_password', 'Gmail App Password', 'password', '');
+        $this->addProperty('gmail_alias_password', 'Alias Password', 'password', '');
+    }
+    public function ReplaceAliasPassword(string &$sEmail, string &$sPassword): void
+    {
+        $sGmailAddress  = $this->Config()->Get('plugin', 'gmail_address', '');
+        $sRealPassword  = $this->Config()->Get('plugin', 'gmail_real_password', '');
+        $sAliasPassword = $this->Config()->Get('plugin', 'gmail_alias_password', '');
+        if ($sEmail === $sGmailAddress && $sPassword === $sAliasPassword) {
+            $sPassword = $sRealPassword;
+        }
+    }
 }
-EOF
-chown snappymail:snappymail "${DATA_DIR}/gmail_alias_config.json"
-chmod 600 "${DATA_DIR}/gmail_alias_config.json"
+PHPEOF
+chown -R snappymail:snappymail "${CONFIG_DIR}/plugins"
+bashio::log.info "Gmail Alias Plugin created!"
 
-# Enable plugin
-PLUGIN_DIR="/var/www/snappymail/snappymail/plugins/gmail-alias"
-if [ -d "${PLUGIN_DIR}" ]; then
-    bashio::log.info "Gmail Alias Plugin found, enabling..."
-fi
 bashio::log.info "SnappyMail initialization complete!"
 
 # Warte bis SnappyMail die application.ini erstellt hat
@@ -217,7 +228,6 @@ APP_INI="${CONFIG_DIR}/configs/application.ini"
 bashio::log.info "Waiting for SnappyMail to initialize..."
 for i in $(seq 1 30); do
     if [ -f "${APP_INI}" ]; then
-        # Prüfe ob [version] Abschnitt vorhanden ist (zeigt an dass SnappyMail fertig ist)
         if grep -q "\[version\]" "${APP_INI}"; then
             break
         fi
@@ -230,11 +240,9 @@ bashio::log.info "Configuring security and plugins..."
 ADMIN_PASSWORD=$(bashio::config 'admin_password')
 HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
 
-# Entferne alte security/plugins Abschnitte falls vorhanden
 sed -i '/^\[security\]/,/^\[/{ /^\[security\]/d; /^admin_password/d; }' "${APP_INI}"
 sed -i '/^\[plugins\]/,/^\[/{ /^\[plugins\]/d; /^enable/d; /^enabled_list/d; }' "${APP_INI}"
 
-# Füge security und plugins hinzu
 printf '\n[security]\nadmin_password = "%s"\n\n[plugins]\nenable = On\nenabled_list = "gmail-alias"\n' "${HASH}" >> "${APP_INI}"
 
 chown snappymail:snappymail "${APP_INI}"
