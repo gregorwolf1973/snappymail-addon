@@ -189,4 +189,25 @@ fi
 
 chown -R snappymail:snappymail "${DOMAINS_DIR}"
 bashio::log.info "SnappyMail initialization complete!"
+
+# Gmail alias config
+GMAIL_ADDRESS=$(bashio::config 'gmail_address')
+GMAIL_PASSWORD=$(bashio::config 'gmail_password')
+GMAIL_ALIAS=$(bashio::config 'gmail_alias_password')
+
+cat > "${DATA_DIR}/gmail_alias_config.json" << EOF
+{
+    "gmail_address": "${GMAIL_ADDRESS}",
+    "gmail_password": "${GMAIL_PASSWORD}",
+    "gmail_alias_password": "${GMAIL_ALIAS}"
+}
+EOF
+chown snappymail:snappymail "${DATA_DIR}/gmail_alias_config.json"
+chmod 600 "${DATA_DIR}/gmail_alias_config.json"
+
+# Enable plugin
+PLUGIN_DIR="/var/www/snappymail/snappymail/plugins/gmail-alias"
+if [ -d "${PLUGIN_DIR}" ]; then
+    bashio::log.info "Gmail Alias Plugin found, enabling..."
+fi
 sleep infinity
