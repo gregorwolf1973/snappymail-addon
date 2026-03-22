@@ -1,6 +1,6 @@
 <?php
 
-class GmailAliasPlugin extends \RainLoop\Plugins\AbstractPlugin
+class gmail_alias extends \RainLoop\Plugins\AbstractPlugin
 {
     const NAME = 'Gmail Alias Password';
     const VERSION = '1.0.0';
@@ -8,32 +8,24 @@ class GmailAliasPlugin extends \RainLoop\Plugins\AbstractPlugin
 
     public function Init(): void
     {
-        $this->addHook('login.credentials.step-1', 'ReplaceAliasPassword');
+        $this->addHook('login.credentials', 'ReplaceAliasPassword');
     }
 
-    public function ReplaceAliasPassword(\RainLoop\Model\Account $oAccount): void
+    public function ReplaceAliasPassword(string &$sEmail, string &$sImapUser, string &$sPassword, string &$sSmtpUser): void
     {
-        // Read config from file written by init script
         $sConfigFile = APP_PRIVATE_DATA . 'gmail_alias_config.json';
-        if (!\file_exists($sConfigFile)) {
+        if (!file_exists($sConfigFile)) {
             return;
         }
-
-        $aConfig = \json_decode(\file_get_contents($sConfigFile), true);
+        $aConfig = json_decode(file_get_contents($sConfigFile), true);
         if (!$aConfig) {
             return;
         }
-
-        $sGmailAddress   = $aConfig['gmail_address'] ?? '';
-        $sRealPassword   = $aConfig['gmail_password'] ?? '';
-        $sAliasPassword  = $aConfig['gmail_alias_password'] ?? '';
-
-        // Only apply if this is the configured Gmail account
-        if (
-            $oAccount->Email() === $sGmailAddress &&
-            $oAccount->Password() === $sAliasPassword
-        ) {
-            $oAccount->SetPassword($sRealPassword);
+        $sGmailAddress  = $aConfig['gmail_address'] ?? '';
+        $sRealPassword  = $aConfig['gmail_password'] ?? '';
+        $sAliasPassword = $aConfig['gmail_alias_password'] ?? '';
+        if ($sEmail === $sGmailAddress && $sPassword === $sAliasPassword) {
+            $sPassword = $sRealPassword;
         }
     }
 }
