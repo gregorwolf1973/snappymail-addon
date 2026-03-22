@@ -210,4 +210,34 @@ PLUGIN_DIR="/var/www/snappymail/snappymail/plugins/gmail-alias"
 if [ -d "${PLUGIN_DIR}" ]; then
     bashio::log.info "Gmail Alias Plugin found, enabling..."
 fi
+bashio::log.info "SnappyMail initialization complete!"
+
+# Warte bis SnappyMail die application.ini erstellt hat
+APP_INI="${CONFIG_DIR}/configs/application.ini"
+bashio::log.info "Waiting for SnappyMail to initialize..."
+for i in $(seq 1 30); do
+    if [ -f "${APP_INI}" ]; then
+        # Prüfe ob [version] Abschnitt vorhanden ist (zeigt an dass SnappyMail fertig ist)
+        if grep -q "\[version\]" "${APP_INI}"; then
+            break
+        fi
+    fi
+    sleep 1
+done
+
+# Security und Plugins hinzufügen
+bashio::log.info "Configuring security and plugins..."
+ADMIN_PASSWORD=$(bashio::config 'admin_password')
+HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
+
+# Entferne alte security/plugins Abschnitte falls vorhanden
+sed -i '/^\[security\]/,/^\[/{ /^\[security\]/d; /^admin_password/d; }' "${APP_INI}"
+sed -i '/^\[plugins\]/,/^\[/{ /^\[plugins\]/d; /^enable/d; /^enabled_list/d; }' "${APP_INI}"
+
+# Füge security und plugins hinzu
+printf '\n[security]\nadmin_password = "%s"\n\n[plugins]\nenable = On\nenabled_list = "gmail-alias"\n' "${HASH}" >> "${APP_INI}"
+
+chown snappymail:snappymail "${APP_INI}"
+bashio::log.info "Security and plugins configured!"
+
 sleep infinity
