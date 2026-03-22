@@ -30,14 +30,14 @@ SnappyMail is a simple, modern & fast web-based email client. It runs directly i
 
 1. Open SnappyMail from the sidebar
 2. Log in with your email address and password:
-   - Local server: `gregor@biker633.ddnss.de`
-   - Gmail: `gregor.wolf1973@gmail.com`
+   - Local server: `yourname@yourdomain.whatever`
+   - Gmail: `your_gmail_adress@gmail.com`
 
 ## Adding Gmail Account
 
 1. Log in to SnappyMail with your local account first
 2. Click the user icon (top right) → **Add Account**
-3. Enter your Gmail address: `gregor.wolf1973@gmail.com`
+3. Enter your Gmail address: `yourname@gmail.com`
 4. Enter your Gmail **App Password** (not your normal password!)
 
 ### Creating a Gmail App Password
@@ -62,7 +62,7 @@ In the admin panel you can:
 
 The following domains are pre-configured automatically:
 
-- **biker633.ddnss.de** — your local mailserver (IMAP port 993, SMTP port 587)
+- **dynamic.dns.provider** — your local mailserver (IMAP port 993, SMTP port 587)
 - **gmail.com** — Gmail (IMAP port 993, SMTP port 587)
 
 ## Troubleshooting
@@ -74,7 +74,7 @@ The following domains are pre-configured automatically:
 
 ### Cannot connect to local mailserver
 - Verify the Mailserver add-on is running
-- Check that the domain `biker633.ddnss.de` is correct
+- Check that the domain `dynamic.dns.provider` is correct
 
 ### Forgot admin password
 - Change `admin_password` in the add-on options and restart
