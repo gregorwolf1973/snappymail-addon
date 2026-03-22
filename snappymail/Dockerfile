@@ -6,7 +6,7 @@ LABEL \
     io.hass.name="SnappyMail" \
     io.hass.description="Simple, modern & fast web-based email client" \
     io.hass.type="addon" \
-    io.hass.version="1.0.0"
+    io.hass.version="1.2.7"
 
 # Environment
 ENV \
