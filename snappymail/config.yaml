@@ -1,5 +1,5 @@
 name: SnappyMail
-version: "1.1.4"
+version: "1.2.0"
 slug: snappymail
 description: Simple, modern & fast web-based email client. Supports multiple accounts including Gmail.
 url: https://github.com/gregorwolf1973/snappymail-addon
@@ -26,6 +26,9 @@ options:
   smtp_host: "172.30.33.22"
   smtp_port: 587
   domain: "biker633.ddnss.de"
+  gmail_address: "your@gmail.com"
+  gmail_password: "your-app-password"
+  gmail_alias_password: "your-alias-password"
 schema:
   admin_password: str
   web_port: int
@@ -36,6 +39,9 @@ schema:
   smtp_host: str
   smtp_port: int
   domain: str
+  gmail_address: str
+  gmail_password: str
+  gmail_alias_password: str
 map:
   - type: addon_config
     read_only: false
