@@ -6,6 +6,6 @@
 - Initial release
 - SnappyMail 2.38.2
 - Multi-account support (local mailserver + Gmail)
-- Pre-configured domain settings for biker633.ddnss.de and gmail.com
+- Pre-configured domain settings for your.dynamic.dns and gmail.com
 - Home Assistant Ingress support
 - Admin panel
