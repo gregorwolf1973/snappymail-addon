@@ -1,0 +1,265 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# SnappyMail initialization
+# ==============================================================================
+
+DATA_DIR="/var/www/snappymail/data"
+CONFIG_DIR="${DATA_DIR}/_data_/_default_"
+DOMAINS_DIR="${CONFIG_DIR}/domains"
+
+bashio::log.info "Initializing SnappyMail..."
+
+mkdir -p "${DOMAINS_DIR}"
+mkdir -p "${CONFIG_DIR}/configs"
+mkdir -p "${CONFIG_DIR}/plugins/gmail-alias"
+chown -R snappymail:snappymail "${DATA_DIR}"
+
+# Admin password als bcrypt Hash
+ADMIN_PASSWORD=$(bashio::config 'admin_password')
+HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
+cat > "${CONFIG_DIR}/configs/application.ini" << EOF
+[security]
+admin_password = "${HASH}"
+EOF
+chown -R snappymail:snappymail "${CONFIG_DIR}/configs"
+
+# Read config values
+DOMAIN=$(bashio::config 'domain')
+IMAP_HOST=$(bashio::config 'imap_host')
+IMAP_PORT=$(bashio::config 'imap_port')
+SMTP_HOST=$(bashio::config 'smtp_host')
+SMTP_PORT=$(bashio::config 'smtp_port')
+
+# Write local domain JSON
+cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
+{
+    "IMAP": {
+        "host": "${IMAP_HOST}",
+        "port": ${IMAP_PORT},
+        "type": 1,
+        "timeout": 300,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": true,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "use_expunge_all_on_delete": false,
+        "fast_simple_search": true,
+        "force_select": false,
+        "message_all_headers": false,
+        "message_list_limit": 10000,
+        "search_filter": "",
+        "spam_headers": "",
+        "virus_headers": "",
+        "disabled_capabilities": []
+    },
+    "SMTP": {
+        "host": "${SMTP_HOST}",
+        "port": ${SMTP_PORT},
+        "type": 2,
+        "timeout": 60,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": true,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "useAuth": true,
+        "setSender": false,
+        "usePhpMail": false,
+        "authPlainLine": false
+    },
+    "Sieve": {
+        "host": "",
+        "port": 4190,
+        "type": 0,
+        "timeout": 10,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": true,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "enabled": false,
+        "authLiteral": true
+    },
+    "whiteList": ""
+}
+EOF
+
+# Write Gmail domain JSON
+cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
+{
+    "IMAP": {
+        "host": "imap.gmail.com",
+        "port": 993,
+        "type": 1,
+        "timeout": 300,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": false,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "use_expunge_all_on_delete": false,
+        "fast_simple_search": true,
+        "force_select": false,
+        "message_all_headers": false,
+        "message_list_limit": 10000,
+        "search_filter": "",
+        "spam_headers": "",
+        "virus_headers": "",
+        "disabled_capabilities": []
+    },
+    "SMTP": {
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "type": 2,
+        "timeout": 60,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": false,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "useAuth": true,
+        "setSender": false,
+        "usePhpMail": false,
+        "authPlainLine": false
+    },
+    "Sieve": {
+        "host": "",
+        "port": 4190,
+        "type": 0,
+        "timeout": 10,
+        "shortLogin": false,
+        "lowerLogin": true,
+        "stripLogin": "",
+        "sasl": ["PLAIN","LOGIN"],
+        "ssl": {
+            "verify_peer": false,
+            "verify_peer_name": false,
+            "allow_self_signed": false,
+            "SNI_enabled": true,
+            "disable_compression": true,
+            "security_level": 1
+        },
+        "enabled": false,
+        "authLiteral": true
+    },
+    "whiteList": ""
+}
+EOF
+
+# Remove gmail.com from disabled domains
+DISABLED_FILE="${DOMAINS_DIR}/disabled"
+if [ -f "${DISABLED_FILE}" ]; then
+    sed -i '/gmail.com/d' "${DISABLED_FILE}"
+fi
+
+chown -R snappymail:snappymail "${DOMAINS_DIR}"
+
+# Create Gmail Alias Plugin
+bashio::log.info "Creating Gmail Alias Plugin..."
+cat > "${CONFIG_DIR}/plugins/gmail-alias/index.php" << 'PHPEOF'
+<?php
+class GmailAliasPlugin extends \RainLoop\Plugins\AbstractPlugin
+{
+    const NAME = 'Gmail Alias Password';
+    const VERSION = '1.0.0';
+    const DESCRIPTION = 'Replaces alias password with real Gmail App password on login';
+    public function Init(): void
+    {
+        $this->addHook('login.credentials.step-2', 'ReplaceAliasPassword');
+    }
+    public function ReplaceAliasPassword(string &$sEmail, string &$sPassword): void
+    {
+        $sConfigFile = APP_PRIVATE_DATA . 'gmail_alias_config.json';
+        if (!file_exists($sConfigFile)) { return; }
+        $aConfig = json_decode(file_get_contents($sConfigFile), true);
+        if (!$aConfig) { return; }
+        $sGmailAddress  = $aConfig['gmail_address'] ?? '';
+        $sRealPassword  = $aConfig['gmail_password'] ?? '';
+        $sAliasPassword = $aConfig['gmail_alias_password'] ?? '';
+        if ($sEmail === $sGmailAddress && $sPassword === $sAliasPassword) {
+            $sPassword = $sRealPassword;
+        }
+    }
+}
+PHPEOF
+
+# Write Gmail alias config
+GMAIL_ADDRESS=$(bashio::config 'gmail_address')
+GMAIL_PASSWORD=$(bashio::config 'gmail_password')
+GMAIL_ALIAS=$(bashio::config 'gmail_alias_password')
+cat > "${CONFIG_DIR}/gmail_alias_config.json" << EOF
+{
+    "gmail_address": "${GMAIL_ADDRESS}",
+    "gmail_password": "${GMAIL_PASSWORD}",
+    "gmail_alias_password": "${GMAIL_ALIAS}"
+}
+EOF
+chown -R snappymail:snappymail "${CONFIG_DIR}/plugins"
+chown snappymail:snappymail "${CONFIG_DIR}/gmail_alias_config.json"
+chmod 600 "${CONFIG_DIR}/gmail_alias_config.json"
+bashio::log.info "Gmail Alias Plugin created!"
+
+bashio::log.info "SnappyMail initialization complete!"
+
+# Warte bis SnappyMail die application.ini erstellt hat
+APP_INI="${CONFIG_DIR}/configs/application.ini"
+bashio::log.info "Waiting for SnappyMail to initialize..."
+for i in $(seq 1 30); do
+    if [ -f "${APP_INI}" ]; then
+        if grep -q "\[version\]" "${APP_INI}"; then
+            break
+        fi
+    fi
+    sleep 1
+done
+
+# Security und Plugins hinzufügen
+bashio::log.info "Configuring security and plugins..."
+ADMIN_PASSWORD=$(bashio::config 'admin_password')
+HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
+
+sed -i '/^\[security\]/,/^\[/{ /^\[security\]/d; /^admin_password/d; }' "${APP_INI}"
+sed -i '/^\[plugins\]/,/^\[/{ /^\[plugins\]/d; /^enable/d; /^enabled_list/d; }' "${APP_INI}"
+
+printf '\n[security]\nadmin_password = "%s"\n\n[plugins]\nenable = On\nenabled_list = "gmail-alias"\n' "${HASH}" >> "${APP_INI}"
+
+chown snappymail:snappymail "${APP_INI}"
+bashio::log.info "Security and plugins configured!"
+
+sleep infinity

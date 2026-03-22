@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Start nginx
+# ==============================================================================
+
+# Update upload size from options
+UPLOAD_MAX_SIZE=$(bashio::config 'upload_max_size')
+sed -i "s/client_max_body_size .*/client_max_body_size ${UPLOAD_MAX_SIZE};/" /etc/nginx/http.d/snappymail.conf
+
+exec nginx -g "daemon off;"
