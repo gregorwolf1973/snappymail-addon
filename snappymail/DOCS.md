@@ -51,7 +51,7 @@ No additional add-ons needed.
 
 > Find the internal IP of the Mailserver container:
 > ```bash
-> docker inspect addon_XXXXXXXX_mailserver | grep IPAddress
+> docker inspect addon_b899ec6d_snappymail | grep IPAddress
 > ```
 
 ---
