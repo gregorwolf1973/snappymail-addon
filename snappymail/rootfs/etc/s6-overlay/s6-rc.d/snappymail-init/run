@@ -3,7 +3,7 @@
 # SnappyMail initialization
 # ==============================================================================
 
-DATA_DIR="/var/www/snappymail/data"
+DATA_DIR="/config/snappymail/data"
 CONFIG_DIR="${DATA_DIR}/_data_/_default_"
 DOMAINS_DIR="${CONFIG_DIR}/domains"
 INIT_FLAG="${CONFIG_DIR}/.snappymail_initialized"
