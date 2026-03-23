@@ -252,9 +252,10 @@ done
 # Only configure security and plugins if not already set
 if ! grep -q "admin_password" "${APP_INI}"; then
     bashio::log.info "Configuring security and plugins..."
-    ADMIN_PASSWORD=$(bashio::config 'admin_password')
-    HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
+    # Generate random admin password on first start
+    HASH=$(php84 -r "echo password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT);")
     printf '\n[security]\nadmin_password = "%s"\n\n[plugins]\nenable = On\nenabled_list = "gmail-alias"\n' "${HASH}" >> "${APP_INI}"
+    bashio::log.info "Admin password set - please reset via admin panel!"
     chown snappymail:snappymail "${APP_INI}"
     bashio::log.info "Security and plugins configured!"
 else
