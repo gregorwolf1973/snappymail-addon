@@ -98,7 +98,7 @@ Set `gmail_alias_password` to any password you choose. SnappyMail will automatic
 
 After installation, you need to set the admin password once. Tip to Terminal:
 ```bash
-docker exec addon_XXXXXXXX_snappymail sh -c "HASH=\$(php84 -r \"echo password_hash('changeme', PASSWORD_BCRYPT);\") && sed -i \"s|admin_password = .*|admin_password = \\\"\$HASH\\\"|\" /var/www/snappymail/data/_data_/_default_/configs/application.ini"
+docker exec addon_b899ec6d_snappymail sh -c "HASH=\$(php84 -r \"echo password_hash('changeme', PASSWORD_BCRYPT);\") && sed -i \"s|admin_password = .*|admin_password = \\\"\$HASH\\\"|\" /var/www/snappymail/data/_data_/_default_/configs/application.ini"
 ```
 
 Then open the admin panel and change the password immediately:
