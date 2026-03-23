@@ -250,7 +250,7 @@ for i in $(seq 1 30); do
 done
 
 # Only configure security and plugins if not already set
-if ! grep -q "\[security\]" "${APP_INI}"; then
+if ! grep -q "admin_password" "${APP_INI}"; then
     bashio::log.info "Configuring security and plugins..."
     ADMIN_PASSWORD=$(bashio::config 'admin_password')
     HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
