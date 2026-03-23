@@ -6,6 +6,7 @@
 DATA_DIR="/var/www/snappymail/data"
 CONFIG_DIR="${DATA_DIR}/_data_/_default_"
 DOMAINS_DIR="${CONFIG_DIR}/domains"
+INIT_FLAG="${CONFIG_DIR}/.snappymail_initialized"
 
 bashio::log.info "Initializing SnappyMail..."
 
@@ -14,24 +15,18 @@ mkdir -p "${CONFIG_DIR}/configs"
 mkdir -p "${CONFIG_DIR}/plugins/gmail-alias"
 chown -R snappymail:snappymail "${DATA_DIR}"
 
-# Admin password als bcrypt Hash
-ADMIN_PASSWORD=$(bashio::config 'admin_password')
-HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
-cat > "${CONFIG_DIR}/configs/application.ini" << EOF
-[security]
-admin_password = "${HASH}"
-EOF
-chown -R snappymail:snappymail "${CONFIG_DIR}/configs"
+if [ ! -f "${INIT_FLAG}" ]; then
+    bashio::log.info "First start - writing configuration..."
 
-# Read config values
-DOMAIN=$(bashio::config 'domain')
-IMAP_HOST=$(bashio::config 'imap_host')
-IMAP_PORT=$(bashio::config 'imap_port')
-SMTP_HOST=$(bashio::config 'smtp_host')
-SMTP_PORT=$(bashio::config 'smtp_port')
+    # Read config values
+    DOMAIN=$(bashio::config 'domain')
+    IMAP_HOST=$(bashio::config 'imap_host')
+    IMAP_PORT=$(bashio::config 'imap_port')
+    SMTP_HOST=$(bashio::config 'smtp_host')
+    SMTP_PORT=$(bashio::config 'smtp_port')
 
-# Write local domain JSON
-cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
+    # Write local domain JSON
+    cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
 {
     "IMAP": {
         "host": "${IMAP_HOST}",
@@ -106,8 +101,8 @@ cat > "${DOMAINS_DIR}/${DOMAIN}.json" << EOF
 }
 EOF
 
-# Write Gmail domain JSON
-cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
+    # Write Gmail domain JSON
+    cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
 {
     "IMAP": {
         "host": "imap.gmail.com",
@@ -182,15 +177,20 @@ cat > "${DOMAINS_DIR}/gmail.com.json" << 'EOF'
 }
 EOF
 
-# Remove gmail.com from disabled domains
+    chown -R snappymail:snappymail "${DOMAINS_DIR}"
+    touch "${INIT_FLAG}"
+    bashio::log.info "First start configuration complete!"
+else
+    bashio::log.info "Already initialized - skipping domain configuration"
+fi
+
+# Always remove gmail.com from disabled domains
 DISABLED_FILE="${DOMAINS_DIR}/disabled"
 if [ -f "${DISABLED_FILE}" ]; then
     sed -i '/gmail.com/d' "${DISABLED_FILE}"
 fi
 
-chown -R snappymail:snappymail "${DOMAINS_DIR}"
-
-# Create Gmail Alias Plugin
+# Always create/update Gmail Alias Plugin
 bashio::log.info "Creating Gmail Alias Plugin..."
 cat > "${CONFIG_DIR}/plugins/gmail-alias/index.php" << 'PHPEOF'
 <?php
@@ -219,7 +219,7 @@ class GmailAliasPlugin extends \RainLoop\Plugins\AbstractPlugin
 }
 PHPEOF
 
-# Write Gmail alias config
+# Always update Gmail alias config
 GMAIL_ADDRESS=$(bashio::config 'gmail_address')
 GMAIL_PASSWORD=$(bashio::config 'gmail_password')
 GMAIL_ALIAS=$(bashio::config 'gmail_alias_password')
@@ -249,17 +249,22 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# Security und Plugins hinzufügen
-bashio::log.info "Configuring security and plugins..."
-ADMIN_PASSWORD=$(bashio::config 'admin_password')
-HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
-
-sed -i '/^\[security\]/,/^\[/{ /^\[security\]/d; /^admin_password/d; }' "${APP_INI}"
-sed -i '/^\[plugins\]/,/^\[/{ /^\[plugins\]/d; /^enable/d; /^enabled_list/d; }' "${APP_INI}"
-
-printf '\n[security]\nadmin_password = "%s"\n\n[plugins]\nenable = On\nenabled_list = "gmail-alias"\n' "${HASH}" >> "${APP_INI}"
-
-chown snappymail:snappymail "${APP_INI}"
-bashio::log.info "Security and plugins configured!"
+# Only configure security and plugins if not already set
+if ! grep -q "\[security\]" "${APP_INI}"; then
+    bashio::log.info "Configuring security and plugins..."
+    ADMIN_PASSWORD=$(bashio::config 'admin_password')
+    HASH=$(php84 -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT);")
+    printf '\n[security]\nadmin_password = "%s"\n\n[plugins]\nenable = On\nenabled_list = "gmail-alias"\n' "${HASH}" >> "${APP_INI}"
+    chown snappymail:snappymail "${APP_INI}"
+    bashio::log.info "Security and plugins configured!"
+else
+    bashio::log.info "Security already configured - skipping"
+    # Make sure plugin is still enabled
+    if ! grep -q "gmail-alias" "${APP_INI}"; then
+        bashio::log.info "Re-enabling gmail-alias plugin..."
+        sed -i '/^\[plugins\]/,/^\[/{/^enabled_list/d}' "${APP_INI}"
+        sed -i 's/^\(\[plugins\]\)/\1\nenabled_list = "gmail-alias"/' "${APP_INI}"
+    fi
+fi
 
 sleep infinity
