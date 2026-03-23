@@ -17,7 +17,6 @@ ports:
 ports_description:
   8889/tcp: SnappyMail Web UI
 options:
-  admin_password: "changeme"
   web_port: 8889
   upload_max_size: "25M"
   memory_limit: "128M"
@@ -30,7 +29,6 @@ options:
   gmail_password: "your-app-password"
   gmail_alias_password: "your-alias-password"
 schema:
-  admin_password: str
   web_port: int
   upload_max_size: str
   memory_limit: str
