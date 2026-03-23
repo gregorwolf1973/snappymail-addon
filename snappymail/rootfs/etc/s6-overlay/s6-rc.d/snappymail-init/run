@@ -10,6 +10,12 @@ INIT_FLAG="${CONFIG_DIR}/.snappymail_initialized"
 
 bashio::log.info "Initializing SnappyMail..."
 
+# Link persistent data directory FIRST
+mkdir -p "${DATA_DIR}"
+rm -rf /var/www/snappymail/data
+ln -sf "${DATA_DIR}" /var/www/snappymail/data
+
+# Now create subdirectories (they will be in /config/snappymail/data)
 mkdir -p "${DOMAINS_DIR}"
 mkdir -p "${CONFIG_DIR}/configs"
 mkdir -p "${CONFIG_DIR}/plugins/gmail-alias"
