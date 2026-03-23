@@ -41,6 +41,9 @@ schema:
   gmail_password: str
   gmail_alias_password: str
 map:
+map:
   - type: addon_config
+    read_only: false
+  - type: share
     read_only: false
 image: ghcr.io/gregorwolf1973/snappymail-addon/snappymail/{arch}
