@@ -157,14 +157,30 @@ http://[your-ha-ip]:[web_port]
 
 ## Postfix mynetworks (required for sending with local mailserver)
 
-After installing SnappyMail, add its container to Postfix trusted networks.
-Add to your startup script (`/config/startup/startup.d/`):
+After installing SnappyMail, the Mailserver needs to trust the SnappyMail container IP.
+
+### Prerequisites
+You need the **"Run On Startup.d"** add-on installed in Home Assistant:
+> Install via HACS or search in the Add-on Store for "startup.d"
+> Community thread: https://community.home-assistant.io/t/run-on-startup-d
+
+### Setup
+Create a startup script at `/config/startup/startup.d/mailrelay.sh`:
 ```bash
+#!/bin/bash
+# Allow SnappyMail to send via local Postfix
 docker exec addon_XXXXXXXX_mailserver postconf -e 'mynetworks = 127.0.0.0/8 172.30.33.0/24 [::1]/128 [fd0c:ac1e:2100::]/48'
 docker exec addon_XXXXXXXX_mailserver postfix reload
 ```
 
----
+Replace `XXXXXXXX` with your actual Mailserver container ID (find it with `docker ps | grep mailserver`).
+
+Make the script executable:
+```bash
+chmod +x /config/startup/startup.d/mailrelay.sh
+```
+
+> **Without this script**, SnappyMail cannot send emails through the local Mailserver after a reboot.
 
 ## Documentation
 
