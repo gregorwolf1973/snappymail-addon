@@ -1,40 +1,34 @@
 configuration:
-  admin_password:
-    name: Admin Password
-    description: Password for the SnappyMail admin panel. Change immediately after installation!
   web_port:
-    name: Web Port
+    name: "🌐 Web Port"
     description: Port for the SnappyMail web UI (e.g. 8889)
-  domain:
-    name: Mail Domain
-    description: Your mail domain (e.g. yourdomain.com)
-  imap_host:
-    name: IMAP Host
-    description: Internal Docker IP of the Mailserver container (e.g. 172.30.33.22)
-  imap_port:
-    name: IMAP Port
-    description: IMAP server port (default 993)
-  smtp_host:
-    name: SMTP Host
-    description: Internal Docker IP of the Mailserver container (e.g. 172.30.33.22)
-  smtp_port:
-    name: SMTP Port
-    description: SMTP server port (default 587)
-  gmail_address:
-    name: Gmail Address
-    description: Your Gmail email address
-  gmail_password:
-    name: Gmail App Password
-    description: Gmail App Password (not your regular Gmail password!)
-  gmail_alias_password:
-    name: Gmail Alias Password
-    description: A custom password you can use instead of the real Gmail App Password
   upload_max_size:
-    name: Max Upload Size
+    name: "📎 Max Upload Size"
     description: Maximum size for email attachments (e.g. 25M, 50M)
   memory_limit:
-    name: PHP Memory Limit
+    name: "⚙️ PHP Memory Limit"
     description: PHP memory limit (e.g. 128M, 256M)
-  log_to_stdout:
-    name: Log to stdout
-    description: Forward logs to the Home Assistant log viewer
+  domain:
+    name: "📬 [Local Mail] Domain"
+    description: Your mail domain (e.g. yourdomain.com)
+  imap_host:
+    name: "📬 [Local Mail] IMAP Host"
+    description: Internal Docker IP of the Mailserver container
+  imap_port:
+    name: "📬 [Local Mail] IMAP Port"
+    description: IMAP server port (default 993)
+  smtp_host:
+    name: "📬 [Local Mail] SMTP Host"
+    description: Internal Docker IP of the Mailserver container
+  smtp_port:
+    name: "📬 [Local Mail] SMTP Port"
+    description: SMTP server port (default 587)
+  gmail_address:
+    name: "📧 [Gmail] Address"
+    description: Your Gmail email address
+  gmail_password:
+    name: "📧 [Gmail] App Password"
+    description: Gmail App Password (not your regular Gmail password!)
+  gmail_alias_password:
+    name: "📧 [Gmail] Alias Password"
+    description: A custom password you can use instead of the real Gmail App Password
