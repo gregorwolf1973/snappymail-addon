@@ -266,12 +266,16 @@ if ! grep -q "admin_password" "${APP_INI}"; then
     bashio::log.info "Security and plugins configured!"
 else
     bashio::log.info "Security already configured - skipping"
-    # Make sure plugin is still enabled
-    if ! grep -q "gmail-alias" "${APP_INI}"; then
-        bashio::log.info "Re-enabling gmail-alias plugin..."
-        sed -i '/^\[plugins\]/,/^\[/{/^enabled_list/d}' "${APP_INI}"
-        sed -i 's/^\(\[plugins\]\)/\1\nenabled_list = "gmail-alias"/' "${APP_INI}"
-    fi
 fi
+
+# Always ensure plugins are enabled
+bashio::log.info "Ensuring plugins are enabled..."
+sed -i 's/enable = Off/enable = On/' "${APP_INI}"
+if ! grep -q "gmail-alias" "${APP_INI}"; then
+    bashio::log.info "Re-enabling gmail-alias plugin..."
+    sed -i '/^\[plugins\]/a enabled_list = "gmail-alias"' "${APP_INI}"
+fi
+chown snappymail:snappymail "${APP_INI}"
+bashio::log.info "Plugins enabled!"
 
 sleep infinity
