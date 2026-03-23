@@ -85,14 +85,34 @@ http://[your-ha-ip]:[web_port]/?admin
 
 ## Sidebar Integration
 
-Add to `configuration.yaml`:
-```yaml
-panel_iframe:
-  snappymail:
-    title: SnappyMail
-    icon: mdi:email
-    url: http://[your-ha-ip]:[web_port]
+### Option 1: Nginx Proxy Manager (recommended)
+
+If you have Nginx Proxy Manager installed, you can access SnappyMail via HTTPS and embed it in the HA sidebar.
+
+**Nginx Proxy Manager setup:**
+1. Add a new Proxy Host
+2. **Domain:** e.g. `webmail.yourdomain.com`
+3. **Scheme:** `http`
+4. **Forward Hostname:** `homeassistant.local` (or your HA IP)
+5. **Forward Port:** `8889` (or your configured port)
+6. **SSL:** Enable Let's Encrypt certificate
+
+7. Under **Advanced**, add:
+```nginx
+proxy_hide_header X-Frame-Options;
+proxy_hide_header Content-Security-Policy;
+add_header X-Frame-Options "SAMEORIGIN";
 ```
+
+### Dashboard iFrame card
+
+1. Open a Dashboard → Edit → Add card
+2. Search for **"Webpage"** or **"iFrame"**
+3. URL: `http://[your-ha-ip]:[web_port]`
+
+### Direct browser tab
+
+Simply open `http://[your-ha-ip]:[web_port]` in any browser tab.
 
 ## Postfix mynetworks (required for sending with local mailserver)
 
