@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 - 2026-09-14
+
+### Fixed
+- Doppelter Top-Level-Schlüssel `map:` in config.yaml zusammengeführt; der leere erste Block überschrieb still die Liste. Jetzt ein einziger `map:`-Block mit `addon_config` und `share`.
+
 ## 1.2.6 - 2026-03-22
 
 ### Fixed

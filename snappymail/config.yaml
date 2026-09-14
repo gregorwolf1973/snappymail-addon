@@ -1,5 +1,5 @@
 name: SnappyMail
-version: "1.4.0"
+version: "1.4.1"
 slug: snappymail
 description: Simple, modern & fast web-based email client. Supports multiple accounts including Gmail.
 url: https://github.com/gregorwolf1973/snappymail-addon
@@ -40,7 +40,6 @@ schema:
   gmail_address: str
   gmail_password: str
   gmail_alias_password: str
-map:
 map:
   - type: addon_config
     read_only: false
