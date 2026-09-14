@@ -24,7 +24,7 @@ If you want to use your own mail domain, install these add-ons from the [Erik73 
 | **Mailserver** (erik73) | Provides IMAP and SMTP (Postfix + Dovecot) |
 
 Add the Erik73 repository:
-1. **Settings → Add-ons → Add-on Store → ⋮ → Repositories**
+1. **Settings → Apps → Install app → ⋮ → Repositories**
 2. Add: `https://github.com/erik73/hassio-addons`
 3. Install **MariaDB** first, then **Mailserver**
 
@@ -36,7 +36,7 @@ No additional add-ons needed. Configure your Gmail credentials in the SnappyMail
 
 ## Installation
 
-1. **Settings → Add-ons → Add-on Store → ⋮ → Repositories**
+1. **Settings → Apps → Install app → ⋮ → Repositories**
 2. Add: `https://github.com/gregorwolf1973/snappymail-addon`
 3. Find **SnappyMail** and click **Install**
 4. Configure the options (see below)
@@ -98,12 +98,24 @@ Set `gmail_alias_password` to any password you choose. SnappyMail will automatic
 
 ## First Start & Admin Panel
 
-After installation, you need to set the admin password once. Tip to Terminal:
+On the very first start the add-on generates a **random admin password** and
+stores only its bcrypt hash in
+`/config/snappymail/data/_data_/_default_/configs/application.ini`. This closes
+the well-known default password `12345`, but it also means the plain password is
+**not shown anywhere** — neither in the add-on log nor in a file. Nobody can log
+into the admin panel until you set a password of your own.
+
+To set your own admin password, run this from a terminal on the Home Assistant
+host (replace `changeme` with your password and `addon_b899ec6d_snappymail` with
+your container name from `docker ps | grep snappymail`):
 ```bash
 docker exec addon_b899ec6d_snappymail sh -c "HASH=\$(php84 -r \"echo password_hash('changeme', PASSWORD_BCRYPT);\") && sed -i \"s|admin_password = .*|admin_password = \\\"\$HASH\\\"|\" /var/www/snappymail/data/_data_/_default_/configs/application.ini"
 ```
 
-Then open the admin panel and change the password immediately:
+The same command also works later on as a **password reset** if you ever lock
+yourself out of the admin panel.
+
+Then open the admin panel and log in as user `admin` with that password:
 ```
 http://[your-ha-ip]:[web_port]/?admin
 ```
@@ -113,7 +125,8 @@ In the admin panel you can:
 - Manage domain configurations
 - Enable/disable plugins --> enable Gmail Alias-Plugin
 
-> **Important:** Change the admin password immediately after first login!
+> **Important:** The admin panel is only needed for administration — for reading
+> mail you simply log in with your mail account on the normal web UI.
 
 ---
 

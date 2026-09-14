@@ -81,17 +81,32 @@ Set `gmail_alias_password` to any password you choose. SnappyMail will automatic
 
 ## First Start & Admin Panel
 
-After installation, set the admin password once via SSH:
+On the first start the init script generates a **random admin password** and
+writes only its bcrypt hash into
+`/config/snappymail/data/_data_/_default_/configs/application.ini`. That way the
+SnappyMail default password `12345` is never active — but the generated password
+itself is **not displayed anywhere** (it is not written to the add-on log). The
+admin panel is therefore locked until you set your own password.
+
+Set your own admin password via SSH / terminal (replace `changeme`; find the
+container name with `docker ps | grep snappymail`):
 ```bash
 docker exec addon_b899ec6d_snappymail sh -c "HASH=\$(php84 -r \"echo password_hash('changeme', PASSWORD_BCRYPT);\") && sed -i \"s|admin_password = .*|admin_password = \\\"\$HASH\\\"|\" /config/snappymail/data/_data_/_default_/configs/application.ini"
 ```
 
-Then open the admin panel and change the password immediately:
+The same command is also the way to **reset** the password later if you are
+locked out. The change takes effect immediately, no restart needed.
+
+Then open the admin panel and log in as `admin`:
 ```
 http://[your-ha-ip]:[web_port]/?admin
 ```
 
-> **Important:** Change the admin password immediately after first login under **Security**!
+You can change the password afterwards in the admin panel under **Security**.
+
+> **Note:** The admin panel is only for administration (domains, plugins,
+> security). For reading mail, log in on the normal web UI with your mail
+> account.
 
 ---
 

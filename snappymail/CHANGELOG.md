@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2 - 2026-09-14
+
+### Changed
+- Log-Meldung beim ersten Start korrigiert: Das Init-Skript erzeugt ein zufälliges Admin-Passwort und speichert nur dessen Hash. Die alte Meldung ("please reset via admin panel") war irreführend, weil ohne bekanntes Passwort niemand ins Admin-Panel kommt. Jetzt wird auf die Dokumentation verwiesen.
+- README und DOCS.md: Abschnitt "First Start & Admin Panel" neu geschrieben. Beschrieben ist jetzt, dass das Passwort zufällig erzeugt und nirgends angezeigt wird; der `docker exec`-Befehl dient zum Setzen eines eigenen Passworts bzw. als Reset.
+
 ## 1.4.1 - 2026-09-14
 
 ### Fixed
