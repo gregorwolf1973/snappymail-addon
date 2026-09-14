@@ -1,5 +1,7 @@
 # SnappyMail Add-on Documentation
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/gregorwolf1973)
+
 ## About
 
 SnappyMail is a simple, modern & fast web-based email client. It runs directly in your browser and supports multiple email accounts — including your local mailserver and Gmail.
